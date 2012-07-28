@@ -101,8 +101,8 @@ pub main | check, delay, i, temp, t, dt
   repeat
 
 
-    'play_animation(@chase, 50, FORWARD)
-    fade_animation(@lolololol, 100, FORWARD)
+    play_animation(@richo, 50, FORWARD)
+    'fade_animation(@lolololol, 100, FORWARD)
 
     'give your eyes a chance to come back from being blinded :)
     pause(4)
@@ -233,6 +233,11 @@ pub play_animation(pntr, ms, direction) | steps, t
 
   steps := byte[pntr]
 
+  leds.digital(%11111111, $FF)
+  pause(20)
+  leds.digital(%00000000, $FF)
+  pause(250)
+
   if (direction == FORWARD)
     pntr += 1
     direction := 1
@@ -245,6 +250,8 @@ pub play_animation(pntr, ms, direction) | steps, t
     leds.digital(byte[pntr], $FF)
     pntr += direction
     waitcnt(t += (ms * MS_001))
+  leds.digital(%00000000, $FF)
+  pause(2000)
 
 
 con
