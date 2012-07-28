@@ -101,10 +101,11 @@ pub main | check, delay, i, temp, t, dt
   repeat
 
 
-    play_animation(@chase, 50, REVERSE)
+    'play_animation(@chase, 50, FORWARD)
+    fade_animation(@lolololol, 100, FORWARD)
 
     'give your eyes a chance to come back from being blinded :)
-    pause(1000)
+    pause(4)
 
 
 con
@@ -189,6 +190,41 @@ pub scramble(cycles, ms) | t
     waitcnt(t += (ms * MS_001))
 
 
+pub fade_animation(pntr, ms, direction) | steps, t
+  steps := byte[pntr]
+
+  if (direction == FORWARD)
+    pntr += 1
+    direction := 1
+  else
+    pntr += steps
+    direction := -1
+
+  t := cnt
+  'leds.digital(byte[pntr], $FF)
+  repeat steps
+    if byte[pntr] & %10000000
+        fade_in(1, 500)
+    if byte[pntr] & %01000000
+        fade_in(1, 500)
+    if byte[pntr] & %00100000
+        fade_in(2, 500)
+    if byte[pntr] & %01010000
+        fade_in(3, 500)
+    if byte[pntr] & %01001000
+        fade_in(4, 500)
+    if byte[pntr] & %01000100
+        fade_in(5, 500)
+    if byte[pntr] & %01000010
+        fade_in(6, 500)
+    if byte[pntr] & %01000001
+        fade_in(7, 500)
+    pause(1)
+    leds.digital(%00000000, $FF)
+    pntr += direction
+    waitcnt(t += (ms * MS_001))
+con
+
 pub play_animation(pntr, ms, direction) | steps, t
 
 '' Play byte-wide animation at pointer
@@ -219,11 +255,7 @@ con
   {                       }
   { ===================== }
 
-
 dat
-
-
-
 Chase                   byte    17
                         byte    %11111111
                         byte    %00010001
@@ -242,6 +274,19 @@ Chase                   byte    17
                         byte    %01111110
                         byte    %10000001
                         byte    %01111110
+
+
+
+con
+
+dat
+Lolololol               byte    6
+                        byte    %00000000
+                        byte    %00000000
+                        byte    %11111111
+                        byte    %00000000
+                        byte    %11111111
+                        byte    %00000000
 
 
 
