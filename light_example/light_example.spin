@@ -263,11 +263,13 @@ con
   { ===================== }
 
 dat
-Chase                   byte    17
+Richo                   byte    24
                         byte    %11111111
                         byte    %00010001
-                        byte    %11101110
+                        byte    %00001010
+                        byte    %11110100
                         byte    %00000000
+                        byte    %11111001
                         byte    %11111001
                         byte    %00000000
                         byte    %01111110
@@ -275,15 +277,17 @@ Chase                   byte    17
                         byte    %10000001
                         byte    %00000000
                         byte    %11111111
+                        byte    %11111111
+                        byte    %00011000
                         byte    %00011000
                         byte    %11111111
+                        byte    %11111111
                         byte    %00000000
-                        byte    %01111110
+                        byte    %00111100
+                        byte    %01000010
                         byte    %10000001
-                        byte    %01111110
-
-
-
+                        byte    %01000010
+                        byte    %00111100
 con
 
 dat
