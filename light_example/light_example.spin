@@ -22,7 +22,7 @@ con
 ''
   RX1  = 31                                                     ' programming / terminal
   TX1  = 30
-  
+
   SDA  = 29                                                     ' eeprom / i2c
   SCL  = 28
 
@@ -31,7 +31,7 @@ con
 
   KB_D = 25                                                     ' ps/2 keyboard
   KB_C = 24
-  
+
   LED8 = 23                                                     ' leds / vga
   LED7 = 22
   LED6 = 21
@@ -64,12 +64,12 @@ con
 
 obj
 
-  rr    : "realrandom"                                          ' hardware random   
+  rr    : "realrandom"                                          ' hardware random
   prng  : "jm_prng"                                             ' pseudo-random
 
-  leds  : "jm_pwm8"                                             ' led modulation    
-  
-' * not used in non-human badge 
+  leds  : "jm_pwm8"                                             ' led modulation
+
+' * not used in non-human badge
 
 var
 
@@ -86,62 +86,22 @@ pub main | check, delay, i, temp, t, dt
   ' seed pseudo-random number generator with hardware
   ' -- hardware randomizer cog released after
   ' -- allows for true random on power-up without using full-time cog
-  
+
   rr.start                                                      ' start hardware random
   prng.seed(rr.random, rr.random, rr.random, $DEFC01, 0)        ' seed prng (no cog)
   'rr.stop                                                       ' unload hardware random cog
-                                                                 
+
   leds.start(8, LED1)                                         ' start drivers
 
 
   pause(5)                                                    ' give all drivers a moment to stablize
 
-  
+
   ' main program loop
   repeat
 
-    mode := (||rr.random) // MAX_MODES                  'select a new random mode                        
-  
-    case mode
-      'LEDs chase each other a few times
-      0:
-        play_animation(@chase, 50, REVERSE)
-        play_animation(@chase, 50, REVERSE)
-        pause(250)
 
-        play_animation(@chase, 50, FORWARD)
-        play_animation(@chase, 50, FORWARD)         
-        pause(250) 
-                                                                                
-      'All LEDs fade up, then fade down one at a time, in sequence   
-      1:
-        fade_in(ALL, 750)
-        pause(250)
-
-        repeat i from 0 to 7
-          fade_out(i, 250)
-          pause(10)
-           
-        pause(1000)
-
-      'Random LEDs fade in, then all LEDs fade out  
-      2:
-        repeat 10
-          i := 0 #> ((||rr.random)//8) <#7
-          fade_in(i, 100)
-          pause(50)
-
-        fade_out(ALL, 1000)
-
-      'Play an animation a few times  
-      3:
-        repeat 3
-          play_animation(@inOut, 50, FORWARD)
-
-      'Play the scramble for a little bit    
-      4:
-        scramble(25, 50)
-        leds.digital(0, $FF)
+    play_animation(@chase, 50, REVERSE)
 
     'give your eyes a chance to come back from being blinded :)
     pause(1000)
@@ -164,17 +124,17 @@ pub fade_in(ch, ms) | t, cycletix
 
   cycletix := ms * MS_001 / 255                                 ' pre-calc for short events
 
-  t := cnt  
+  t := cnt
   case ch
     ALL:
-      repeat 255                          
-        leds.inc_all                      
-        waitcnt(t += cycletix) 
+      repeat 255
+        leds.inc_all
+        waitcnt(t += cycletix)
 
     0..7:                                                       ' single channel?
-      repeat 255                          
-        leds.inc(ch)                      
-        waitcnt(t += cycletix) 
+      repeat 255
+        leds.inc(ch)
+        waitcnt(t += cycletix)
 
 
 pub larsen(idx, cycles, ms) | t
@@ -188,33 +148,33 @@ pub larsen(idx, cycles, ms) | t
     idx := 0
 
   t := cnt
-  repeat cycles 
+  repeat cycles
     repeat 14
       leds.dcd(lookupz(idx : 0,1,2,3,4,5,6,7,6,5,4,3,2,1))      ' sequence from wake-up led
       if (--idx < 0)                                            ' at end?
         idx := 13                                               '  yes, reset
-      waitcnt(t += (ms * MS_001 / 14))                          ' hold 
+      waitcnt(t += (ms * MS_001 / 14))                          ' hold
 
 
 pub fade_out(ch, ms) | t, cycletix
 
 '' Fades LED(s) from current brightness to off
 '' -- ch is -1 for all channels, 0..7 for single channel
-'' -- ms is milliseconds for complete fade sequence 
+'' -- ms is milliseconds for complete fade sequence
 
   cycletix := ms * MS_001 / 255                                 ' pre-calc for short events
 
-  t := cnt  
+  t := cnt
   case ch
     ALL:
-      repeat 255                          
-        leds.dec_all                      
-        waitcnt(t += cycletix) 
+      repeat 255
+        leds.dec_all
+        waitcnt(t += cycletix)
 
     0..7:                                                       ' single channel?
-      repeat 255                          
-        leds.dec(ch)                      
-        waitcnt(t += cycletix)  
+      repeat 255
+        leds.dec(ch)
+        waitcnt(t += cycletix)
 
 
 pub scramble(cycles, ms) | t
@@ -223,8 +183,8 @@ pub scramble(cycles, ms) | t
 '' -- event is milliseconds between changes
 '' -- ms is milliseconds per cycle
 
-  t := cnt 
-  repeat cycles 
+  t := cnt
+  repeat cycles
     leds.digital(prng.random, %1111_1111)
     waitcnt(t += (ms * MS_001))
 
@@ -236,7 +196,7 @@ pub play_animation(pntr, ms, direction) | steps, t
 '' -- direction is 0 for forward, 1 for reverse
 
   steps := byte[pntr]
-  
+
   if (direction == FORWARD)
     pntr += 1
     direction := 1
@@ -248,8 +208,8 @@ pub play_animation(pntr, ms, direction) | steps, t
   repeat steps
     leds.digital(byte[pntr], $FF)
     pntr += direction
-    waitcnt(t += (ms * MS_001))  
-    
+    waitcnt(t += (ms * MS_001))
+
 
 con
 
@@ -263,81 +223,28 @@ con
 dat
 
 
-CloseIn                 byte    5                               ' cycles in animation   
-                        byte    %00000000
-                        byte    %10000001
-                        byte    %11000011
-                        byte    %11100111
-                        byte    %11111111
-
-BlowOut                 byte    5
-                        byte    %00000000  
-                        byte    %00011000
-                        byte    %00111100 
-                        byte    %01111110
-                        byte    %11111111     
-
-InOut                   byte    8
-                        byte    %00011000
-                        byte    %00111100 
-                        byte    %01111110
-                        byte    %11111111
-                        byte    %01111110
-                        byte    %00111100  
-                        byte    %00011000
-                        byte    %00000000
-
-Egg                     byte    8
-                        byte    %00011000
-                        byte    %00100100
-                        byte    %01000010
-                        byte    %10000001
-                        byte    %01000010   
-                        byte    %00100100
-                        byte    %00011000   
-                        byte    %00000000
-
-Snake                   byte    17
-                        byte    %00000000
-                        byte    %10000000
-                        byte    %11000000
-                        byte    %11100000
-                        byte    %11110000
-                        byte    %11111000
-                        byte    %11111100
-                        byte    %11111110
-                        byte    %11111111
-                        byte    %01111111
-                        byte    %00111111
-                        byte    %00011111
-                        byte    %00001111
-                        byte    %00000111
-                        byte    %00000011
-                        byte    %00000001
-                        byte    %00000000
 
 Chase                   byte    17
+                        byte    %11111111
+                        byte    %00010001
+                        byte    %11101110
                         byte    %00000000
-                        byte    %10000000
-                        byte    %11000000
-                        byte    %11100000
-                        byte    %01110000
-                        byte    %00111000
-                        byte    %10011100
-                        byte    %11001110
-                        byte    %11100111
-                        byte    %01110011
-                        byte    %00111001
-                        byte    %00011100
-                        byte    %00001110
-                        byte    %00000111
-                        byte    %00000011
-                        byte    %00000001
+                        byte    %11111001
                         byte    %00000000
+                        byte    %01111110
+                        byte    %10000001
+                        byte    %10000001
+                        byte    %00000000
+                        byte    %11111111
+                        byte    %00011000
+                        byte    %11111111
+                        byte    %00000000
+                        byte    %01111110
+                        byte    %10000001
+                        byte    %01111110
 
 
-                                                                                
-    
+
 con
 
   { ===================== }
@@ -346,11 +253,11 @@ con
   {                       }
   { ===================== }
 
-    
+
 pub pause(ms) | t
 
 '' Delay program in milliseconds
-'' -- use only in full-speed mode 
+'' -- use only in full-speed mode
 
   if (ms < 1)                                                   ' delay must be > 0
     return
@@ -358,7 +265,7 @@ pub pause(ms) | t
     t := cnt - 1792                                             ' sync with system counter
     repeat ms                                                   ' run delay
       waitcnt(t += MS_001)
-    
+
 
 pub high(pin)
 
@@ -391,7 +298,7 @@ pub input(pin)
   dira[pin] := 0
 
   return ina[pin]
-                         
+
 
 dat
 
